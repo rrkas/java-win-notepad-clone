@@ -1,5 +1,6 @@
 /*
  * Author: Rohnak Agarwal
+ * Email: rrka79wal@gmal.com
  * Date: 11/10/2021
  *
  * JAVA version: 15
@@ -10,6 +11,9 @@ package notepad;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 
@@ -69,7 +73,7 @@ public class Notepad extends JFrame implements ActionListener {
 
     Notepad() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(0, 0, (int) screenSize.getWidth(), (int) screenSize.getHeight());
+        setBounds(0, 0, screenSize.width, screenSize.height);
         loadMenuBar();
 
         textArea = new JTextArea();
@@ -91,11 +95,8 @@ public class Notepad extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         switch (actionCommand) {
-            case "New": {
-                textArea.setText("");
-                break;
-            }
-            case "Open": {
+            case "New" -> textArea.setText("");
+            case "Open" -> {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setAcceptAllFileFilterUsed(false);
                 FileNameExtensionFilter txtFilter = new FileNameExtensionFilter(
@@ -104,54 +105,69 @@ public class Notepad extends JFrame implements ActionListener {
                 );
                 fileChooser.addChoosableFileFilter(txtFilter);
                 int action = fileChooser.showOpenDialog(this);
-                if(action!=JFileChooser.APPROVE_OPTION){
+                if (action != JFileChooser.APPROVE_OPTION) {
                     return;
                 }
                 File file = fileChooser.getSelectedFile();
-                try{
+                try {
                     BufferedReader reader = new BufferedReader(new FileReader(file));
                     textArea.read(reader, null);
 
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     System.out.println(ex.toString());
                 }
-                break;
             }
-            case "Save": {
+            case "Save" -> {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setApproveButtonText("Save");
                 int action = fileChooser.showOpenDialog(this);
-                if(action != JFileChooser.APPROVE_OPTION){
+                if (action != JFileChooser.APPROVE_OPTION) {
                     return;
                 }
                 String filename = fileChooser.getSelectedFile().toString();
-                if(!filename.endsWith(".txt")){
+                if (!filename.endsWith(".txt")) {
                     filename += ".txt";
                 }
                 File file = new File(filename);
-                BufferedWriter writer = null;
-                try{
+                BufferedWriter writer;
+                try {
                     writer = new BufferedWriter(new FileWriter(file));
                     textArea.write(writer);
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     System.out.println(ex.toString());
                 }
-                break;
             }
-            case "Print":{
+            case "Print" -> {
                 try {
                     textArea.print();
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     System.out.println(ex.toString());
                 }
-                break;
             }
-            case "Exit":{
-                System.exit(0);
+            case "Exit" -> System.exit(0);
+            case "Copy" -> {
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(new StringSelection(textArea.getSelectedText()), null);
             }
-            default: {
-                break;
+            case "Cut" -> {
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(new StringSelection(textArea.getSelectedText()), null);
+                textArea.replaceRange("", textArea.getSelectionStart(), textArea.getSelectionEnd());
             }
+            case "Paste" -> {
+                try {
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    textArea.insert(
+                            clipboard.getContents(DataFlavor.stringFlavor).toString(),
+                            textArea.getCaretPosition()
+                    );
+                } catch (Exception ex) {
+                    System.out.println(ex.toString());
+                }
+            }
+            case "Select All" -> textArea.selectAll();
+            case "About" -> new About().setVisible(true);
+            default -> System.out.println("Action command: " + actionCommand);
         }
     }
 }
