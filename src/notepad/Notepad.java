@@ -72,6 +72,7 @@ public class Notepad extends JFrame implements ActionListener {
     }
 
     Notepad() {
+        setTitle("Notepad Clone");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(0, 0, screenSize.width, screenSize.height);
         loadMenuBar();
@@ -112,7 +113,7 @@ public class Notepad extends JFrame implements ActionListener {
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(file));
                     textArea.read(reader, null);
-
+                    setTitle("Notepad Clone - " + file.getName());
                 } catch (Exception ex) {
                     System.out.println(ex.toString());
                 }
